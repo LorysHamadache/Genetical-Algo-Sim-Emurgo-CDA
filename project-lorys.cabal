@@ -29,7 +29,8 @@ executable project-lorys
                     Characters,
                     Environment,
                     Model,
-                    Tests
+                    Types,
+                    Render
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
