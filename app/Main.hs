@@ -20,8 +20,18 @@ background = white
 nbSimPerSec = 50
 (window_w, window_h) = (1200,1200)
 
-
--- Other Definition
+basic_character = Character {
+    name = "Default",
+    team = Blue,
+    generation = 0,
+    state = Alive,
+    energy = 100,
+    size = 10,
+    speed = 10,
+    position = (0,0),
+    direction = (1,0),
+    rdGen = mkStdGen 1
+    }
 
 
 -- Main 
@@ -35,8 +45,8 @@ main = do
   let modelseed = mkStdGen (random1*random2)
 
   let env_size = 1000
-  let c1 = Character "Lorys" Alive (-100,0) 0 10 1 100 Blue (mkStdGen random1)
-  let c2 = Character "Nicole" Alive (-50,0) 0 10 1 100 Red (mkStdGen random2)
+  let c1 = basic_character {name = "Lorys", rdGen =  (mkStdGen random1)}
+  let c2 = basic_character {name = "Nicole", team = Red, rdGen =  (mkStdGen random2)}
   let character_list = [c1,c2]
   let env1 = Environment env_size []
   let model1 = Model env1 character_list modelseed
@@ -48,4 +58,3 @@ main = do
 
   -- Launch Simulation
   simulate window background nbSimPerSec model1 render_model update_model
-  

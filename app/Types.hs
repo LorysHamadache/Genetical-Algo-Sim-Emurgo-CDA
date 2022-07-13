@@ -8,21 +8,27 @@ import System.Random
 data Model = Model {environment::Environment, character_list::[Character], mdseed::StdGen}
 
 -- Character
-type Position = (Float,Float)
+
 data Team = Red | Blue | Green deriving Show
-data State = Dead | Alive deriving Show
+
+type Position = (Float,Float)
+type MovementVector = (Float,Float)
+data State = Dead | Alive deriving (Show,Eq)
+
 
 data Character = Character {
     name::String,
-    state::State,
-    position::Position,
-    generation::Int,
-    size::Float,
-    speed::Int,
-    energy:: Int,
     team::Team,
+    generation::Int,
+    state::State,
+    energy:: Float,
+    size::Float,
+    speed::Float,
+    position::Position,
+    direction::MovementVector,
     rdGen::StdGen
-}
+} deriving (Show)
+
 
 -- Environment
 

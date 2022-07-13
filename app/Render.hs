@@ -25,7 +25,7 @@ render_model model@(Model env character_list _) =
 
 -- CHARACTER
 render_character :: Character -> Picture
-render_character c = 
+render_character c = if (state c == Dead) then Blank else
     translate (fst $ position c) (snd $ position c) 
     $ color (getcolor $ (team c)) 
     $ (circleSolid (size c))
