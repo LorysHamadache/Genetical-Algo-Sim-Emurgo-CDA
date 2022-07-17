@@ -1,7 +1,7 @@
 module Characters where
 
 --NOTES
--- Consensus in all the functions is that update_RdGen is called before any function using stdGen is called
+-- Consensus in all the functions is that update_RdGen is called before any function using stdGen is called (WITH _random in name)
 
 -- Imports
 import Types
@@ -9,72 +9,72 @@ import System.Random
 import Environment
 
 
+
 -- Tools
 
-getx::(Float,Float) -> Float
-getx (x,y) = x
-
-gety::(Float,Float) -> Float
-gety (x,y) = y
-
-getRandomMovement:: Character -> Position
-getRandomMovement c = (fst$movement, snd$movement)
-    where
-        spd = speed c
-        rdgen = rdGen c
-        movement = fst $ randomR((-spd,-spd),(spd,spd)) rdgen
-
-getRandomNextPosition:: Character -> Character
-getRandomNextPosition c = next_c {position = (x+dx,y+dy), direction = (dx,dy)}
-    where 
-        percentage_change_direction = 2
-        percentage_change_direction::Int
-        select_if_change =  (fst $ randomR(0,100)(rdGen c)) <= percentage_change_direction
-        (x,y) = position c
-        next_c = update_rdGen c
-        (dx,dy) = if select_if_change then getRandomMovement next_c else direction c
-
-ismove_inbounds:: Model -> Position -> Bool
-ismove_inbounds mod pos
+is_MoveInbound:: Model -> Position -> Bool
+is_MoveInbound mod pos
     | xpos < bound && xpos > - bound && ypos < bound && ypos > - bound = True
     | otherwise = False
     where
         bound = (getsize env)/2
-        xpos = getx pos
-        ypos = gety pos
+        (xpos,ypos) = pos
         env = environment mod
+
+get_position:: Character -> MovementVector -> Position
+get_position c mv = (x + mx*spd, y + my*spd)
+    where
+        (x,y) = position c
+        (mx,my) = mv
+        spd = speed c
 
 -- Character Unitary Change 
 
-update_rdGen::Character -> Character
-update_rdGen c = c {rdGen = snd $ randomR(0,v)(rdGen c)}
+update_rdgen::Character -> Character
+update_rdgen c = c {rdgen = snd $ randomR(0,v)(rdgen c)}
     where
         v::Int
         v = (fst $ randomR(1111,9999999) gen) +  round (x*y*nrj *10000)
         (x,y) = position c
         nrj = (energy c)
-        gen = rdGen c
+        gen = rdgen c
 
-update_position:: Character -> Position -> Character
-update_position c pos = c {position = pos}
 
 update_state::Character -> Character
 update_state c 
     | energy c <= 0 = c {state = Dead, energy = 0}
-    | otherwise = c {energy = (energy c) - (speed c)/100}
+    | otherwise = c
 
----- Movement Logic
-character_movement:: Model -> Character -> Character
-character_movement model c
-    | ismove_inbounds model next_pos && (direction new_c /= (0,0))= new_c
-    | otherwise = character_movement model (c{direction = (-lx,-ly)})
+update_energy::Character -> Float -> Character
+update_energy c f
+    | total > 100 = c {energy = 100}
+    | total < 0 = c {energy = 0}
     where
-       new_c = getRandomNextPosition $ update_rdGen c 
-       next_pos =  position new_c
-       (lx,ly) = direction c
+        total = (energy c) + f 
+---- Movement Logic
+
+
+get_randomMovement:: Character -> MovementVector
+get_randomMovement c = movement
+    where
+        gen = rdgen c
+        (mx,my) = direction c
+        (rmx,rmy,rperc) = fst $ randomR((-1.0,-1.0,0),(1.0,1.0,100)) (rdgen c)
+        rperc::Int
+        movement = if (rperc<= 5) then (rmx,rmy) else (mx,my)
+
+
+move_characterRandomly:: Model -> Character -> Character
+move_characterRandomly model c 
+    | is_valid && (next_direction /= (0,0)) = c {position = next_position, direction = next_direction, energy = energy c - (speed c)/100}
+    | otherwise = move_characterRandomly model (update_rdgen c)
+    where
+        next_direction = get_randomMovement $ update_rdgen c 
+        next_position =  get_position c next_direction
+        is_valid = is_MoveInbound model next_position
 
 update_character::Model -> Character -> Character
-update_character model c = update_rdGen $ update_state $ character_movement model c
+update_character model c =  update_state $ move_characterRandomly model (update_rdgen c)
 
 
 

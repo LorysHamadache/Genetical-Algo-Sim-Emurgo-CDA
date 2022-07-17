@@ -1,16 +1,21 @@
 module MyTests where
 
 import System.Random
+import Control.Monad.State.Lazy
+
+data Environment = Environment { name::String, nb_elem::Int, size::(Float,Float)} deriving (Show)
+
+
+env_changeName:: String -> State Environment Environment
+env_changeName new_name = do
+  env <- get
+  let new_env = env {name = new_name}
+  put new_env
+  return(new_env)
+
 
 main = do
-  --why every single line prints "True" ?
-  print $ fst (random (mkStdGen 41) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 5) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 454) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 55645) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 4545) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 7545) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 4545) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 8) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 9) :: (Bool, StdGen))
-  print $ fst (random (mkStdGen 10) :: (Bool, StdGen))
+  let env1 = Environment {name = "Myworld", nb_elem = 5, size = (12.0,14.0)}
+  print(env1)
+  let env2 = evalState(env_changeName "Lorys") env1
+  print(env2)
