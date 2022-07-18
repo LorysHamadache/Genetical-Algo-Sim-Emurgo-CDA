@@ -21,9 +21,9 @@ get_color T3 = color_green
 
 
 -- MODEL
-render_model:: Model -> Picture
-render_model model@(Model env character_list _) =
-    pictures $ (
+render_model:: Model -> IO Picture
+render_model model@(Model env character_list) =
+    return $ pictures $ (
         [render_env env]
         ++
         (map render_character character_list))
