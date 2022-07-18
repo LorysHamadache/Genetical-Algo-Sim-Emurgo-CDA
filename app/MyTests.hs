@@ -14,8 +14,4 @@ env_changeName new_name = do
   return(new_env)
 
 
-main = do
-  let env1 = Environment {name = "Myworld", nb_elem = 5, size = (12.0,14.0)}
-  print(env1)
-  let env2 = evalState(env_changeName "Lorys") env1
-  print(env2)
+    

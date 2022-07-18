@@ -5,7 +5,7 @@ import System.Random
 
 
 -- Model
-data Model = Model {environment::Environment, character_list::[Character], mdseed::StdGen}
+data Model = Model {environment::Environment, character_list::[Character]}
 
 -- Character
 
@@ -25,8 +25,7 @@ data Character = Character {
     size::Float,
     speed::Float,
     position::Position,
-    direction::MovementVector,
-    rdgen::StdGen
+    direction::MovementVector
 } deriving (Show)
 
 basic_character = Character {
@@ -38,8 +37,7 @@ basic_character = Character {
     size = 10,
     speed = 10,
     position = (0,0),
-    direction = (1,0),
-    rdgen = mkStdGen 1
+    direction = (1,0)
     }
 
 
