@@ -13,7 +13,8 @@ import System.Random
 
 import Model
 
-
+-- LAUNCH WITH 
+--cabal haddock --haddock-executables  
 
 
 background = color_dark
