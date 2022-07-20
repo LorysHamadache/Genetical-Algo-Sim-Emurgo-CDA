@@ -1,21 +1,35 @@
+
+{-|
+Module      : Types
+Description : Module Containing all the main Data Types definition as well as basic values
+-}
+
+
 module Types where
 
 
-import System.Random
-
-
--- Model
-data Model = Model {environment::Environment, character_list::[Character]}
-
--- Character
+-- * Low Level Types
 
 data Team = T1 | T2 | T3 deriving Show
-
 type Position = (Float,Float)
 type MovementVector = (Float,Float)
 data State = Dead | Alive deriving (Show,Eq)
+type Size = Float
+
+-- * Model
+-- | Model contains an environment and a list of Character
+data Model = Model {
+    environment::Environment,
+    character_list::[Character],
+    current_tick::Int,
+    gen::Int,
+    tick_perGen:: Int
+    }
 
 
+
+-- * Character
+-- | Character contains a number of characteristics about its state, position and identity
 data Character = Character {
     name::String,
     team::Team,
@@ -25,7 +39,8 @@ data Character = Character {
     size::Float,
     speed::Float,
     position::Position,
-    direction::MovementVector
+    direction::MovementVector,
+    visionfield::Float
 } deriving (Show)
 
 basic_character = Character {
@@ -37,22 +52,22 @@ basic_character = Character {
     size = 10,
     speed = 10,
     position = (0,0),
-    direction = (1,0)
+    direction = (1,0),
+    visionfield = 30.0
     }
 
 
--- Environment
-
-type Size = Float
+-- * Environment
+-- | Environment contains an environment size and a list of objects
 data Environment = Environment {envsize::Size, objects::Objects}
-type Objects = [Food]
-
 data Food = Food {
     fname::String,
     fsize::Float,
     fenergy::Float,
     fposition::Position
 }
+
+type Objects = [Food]
 
 basic_food = Food {
     fname = "Banana",

@@ -1,3 +1,9 @@
+{-|
+Module      : Main
+Description : Entry Point of the program. Initialize Variables & start the simulation
+-}
+
+
 module Main where
 
 -- Imports
@@ -18,7 +24,7 @@ import Model
 
 
 background = color_dark
-nbSimPerSec = 50
+nbSimPerSec = 60
 (window_w, window_h) = (1200,1200)
 
 -- | The Main function is the opening function of our program
@@ -26,13 +32,19 @@ nbSimPerSec = 50
 main :: IO ()
 main = do
   let env_size = 1000
-  let c1 = basic_character {name = "Lorys"}
-  let c2 = basic_character {name = "Nicole", team = T2}
+  let nb_character = 20
+  let nb_food = 20
   let f1 = basic_food 
-  let character_list = [c1,c2]
-  let env1 = Environment env_size [f1]
-  let model1 = Model env1 character_list
-
+  
+  c_list <- mapM init_character (replicate nb_character env_size)
+  food_list <- mapM init_food (replicate nb_food env_size)
+  let env1 = Environment env_size food_list
+  let model1 = Model {
+    environment = env1,
+    character_list = c_list,
+    current_tick = 0 ,
+    gen = 0,
+    tick_perGen = 1000}
   
   (screen_w,screen_h) <- getScreenSize -- ^ Get User Screen Size in order to center the window on start (Useful especially for big screen 5120x1440)
   let (center_w, center_h) = ((screen_w - window_w) `div` 2, (screen_h - window_h) `div` 2 )

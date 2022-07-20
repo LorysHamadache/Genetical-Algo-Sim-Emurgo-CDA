@@ -1,17 +1,41 @@
 module MyTests where
 
-import System.Random
 import Control.Monad.State.Lazy
 
-data Environment = Environment { name::String, nb_elem::Int, size::(Float,Float)} deriving (Show)
+data Environment = Environment { name::String, nb_elem::Int, size::(Float,Float)} deriving (Show) 
+data Character = Character {c_name::String, c_size:: Int} deriving Show
+
+data Model = Model {env::Environment, clist::[Character] } deriving Show
 
 
-env_changeName:: String -> State Environment Environment
-env_changeName new_name = do
-  env <- get
-  let new_env = env {name = new_name}
-  put new_env
-  return(new_env)
+update_character:: Character -> State Environment Character
+update_character c = do
+  env1 <- get
+  let c2 = c {c_size = 30}
+  put (env1 {nb_elem = nb_elem env1 +1})
+  return c2
 
 
-    
+update_model:: Model -> IO Model
+update_model m = do
+  let start_env = env m
+  let (end_clist, end_env) =  runState  (mapM (\x -> update_character x) (clist m)) start_env
+  return $ m {env = end_env, clist = end_clist}
+
+--update_model:: Model -> IO Model
+--update_model m = do
+--  let start_env = env m
+--  let end_clist = map(\x -> evalState (update_character x) start_env) (clist m)
+--  end_env <- get
+--  return $ m {env = end_env, clist = end_clist}
+
+main :: IO ()
+main = do
+  let env1 = Environment "E1" 10 (100,100)
+  let c1 = Character "L1" 10
+  let c2 = Character "L2" 20
+  let m1 = Model env1 [c1,c2]
+  print(m1)
+  m2 <- update_model m1
+  print (m2)
+  

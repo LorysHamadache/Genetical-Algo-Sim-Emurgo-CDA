@@ -1,3 +1,10 @@
+
+{-|
+Module      : Model
+Description : Module Containing all the main functions applied to the Model Data Type and the update method passed to the Vizualization Library
+-}
+
+
 module Model where
 
 -- Imports
@@ -7,46 +14,53 @@ import Environment
 import Graphics.Gloss.Data.ViewPort
 import System.Random
 
--- Functions
 
 
 
-
+-- * Model Update
+-- | Update the Model. This is run once every tick of the simulation
 update_model:: ViewPort -> Float -> Model -> IO Model
 update_model _ _ model = do
      let clist = character_list model -- [Character]
      new_clist <- mapM (\x -> update_character model x) clist      -- map (Model -> Character -> IO Character) [Character] -> [IO Character]
-     return $ model {character_list = new_clist}  
+     let m_tick = if (current_tick model == tick_perGen model) then 0 else (current_tick model) + 1
+     let m_gen = if (current_tick model == tick_perGen model) then (gen model+1) else  gen model
+     return $ model {
+          character_list = new_clist, 
+          current_tick = m_tick,
+          gen = m_gen
+          }  
 
 
 
--- Init Character
 
+-- | Initiate a Character Totally Randomely
+init_character:: Float -> IO Character
+init_character x = do
 
+     let bound =  (x/2 )-1
 
---init_character:: Position -> StdGen -> Character
---init_character p gen = basic_character {position = p, rdgen = gen}
---
---init_characterGen:: Model -> (Model, [StdGen])
---init_characterGen m = (new_model, list_gen)
---     where
---          base = mdseed m
---          randoms =  randomRs (1000,99999999) mdseed
---          list_gen = map mkStdGen (take 100 randoms)
---          new_model = m {mdseed = mkStdGen (sum $ take 100 randoms)}
---
---init_characterPos:: Model -> (Model,[Position])
---init_characterPos m = (new_model, zipWith (tool_randomtoPos bound) list_side list_value)
---     where
---          bound = (envsize (environment m)/2) -1
---          gen1 = mdseed m
---          list_value =  take 100 (fst $ randomRs (-bound,bound) gen1)
---          gen2 = mkStdGen (sum list_value)
---          r2 = randomRs (1,4) gen2       
---          list_side = take 100 (fst $  r2)
---          new_model = m {mdseed = snd $ r2}
+     c_speed <- randomRIO (1.0,2.0)
+     c_n <- randomRIO (1::Int,999999::Int)
+     c_side <- randomRIO (1,4)
+     c_value <- randomRIO (-bound,bound)
+     c_mx <- randomRIO (0::Float, 1.0)
+     c_my <- randomRIO (0::Float, 1.0)
 
+     let c_name = "Default" ++ show(c_n)
 
+     
+     let c_pos = tool_randomtoPos bound c_side c_value
+     let c_dir = (c_mx,c_my)
+     return $ basic_character {name = c_name, speed = c_speed, position = c_pos, direction = c_dir}
+
+init_food:: Float -> IO Food
+init_food env_size = do
+     x <- randomRIO ((10-env_size)/2, (env_size-10)/2)
+     y <- randomRIO ((10-env_size)/2, (env_size-10)/2)
+     return $ basic_food {fposition = (x,y)}
+
+-- |  A small helper function helping to generate a position on the env box based on the boundaries, the side and a value
 tool_randomtoPos:: Float -> Int -> Float -> Position
 tool_randomtoPos bound side value
      | side == 1 = (-bound,value)
