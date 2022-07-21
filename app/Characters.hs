@@ -12,6 +12,7 @@ module Characters where
 import Types
 import System.Random
 import Environment
+import qualified Control.Monad.State.Lazy as SM
 
 
 -- * Movement Tool Functions
@@ -67,8 +68,9 @@ update_state c
 -- | A Helper function to update the energy of a Character by a given float and make sure its stays in the bound [0,100]
 update_energy::Character -> Float -> Character
 update_energy c f
-    | total > 100 = c {energy = 100}
+    | total >= 100 = c {energy = 100}
     | total < 0 = c {energy = 0}
+    | otherwise = c {energy = total}
     where
         total = (energy c) + f 
 
@@ -115,14 +117,34 @@ move_character model c = do
             let food_objective = get_directionFood in_visionfood c
             return $ move_inDirection food_objective c
             
-            
+-- * Life Functions
+
+eat_food:: [Food] -> Character -> Character
+eat_food flist c =  update_energy c e
+    where e = (foldr (\f -> (+) (fenergy f)) 0 flist)
 
 
 -- * Character Update
 -- | Update the Character. This is run once every tick of the simulation
-update_character::Model -> Character -> IO Character
-update_character model c =   (move_character model c)
-                            >>= return . update_state
+update_character::Model -> Character -> SM.StateT Environment IO Character
+update_character model c =  do
+    moved <- SM.liftIO $ move_character model c                                                     -- ^ Moving the Character
+    env1 <- SM.get                                                                                  -- ^ Catching the environment State
+    let f_list1 = objects env1                                                                      
+    let remaining_food = filter (\x -> get_distance (fposition x) (position moved) > 10 ) f_list1
+    let eaten_food = filter (\x -> get_distance (fposition x) (position moved) <= 10 ) f_list1
+    --SM.liftIO $ print (show $ length remaining_food)
+
+    let moved_fed = eat_food eaten_food moved
+
+    SM.put (env1 {objects = remaining_food})
+    return $ (update_state moved_fed)
+    
+        
+
+
+
+                            
 
 
 

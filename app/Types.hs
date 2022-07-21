@@ -53,7 +53,7 @@ basic_character = Character {
     speed = 10,
     position = (0,0),
     direction = (1,0),
-    visionfield = 30.0
+    visionfield = 50.0
     }
 
 

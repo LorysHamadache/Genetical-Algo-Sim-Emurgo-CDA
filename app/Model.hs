@@ -13,7 +13,7 @@ import Characters
 import Environment
 import Graphics.Gloss.Data.ViewPort
 import System.Random
-
+import qualified Control.Monad.State.Lazy as SM
 
 
 
@@ -22,10 +22,11 @@ import System.Random
 update_model:: ViewPort -> Float -> Model -> IO Model
 update_model _ _ model = do
      let clist = character_list model -- [Character]
-     new_clist <- mapM (\x -> update_character model x) clist      -- map (Model -> Character -> IO Character) [Character] -> [IO Character]
+     (new_clist,new_env) <- SM.runStateT (mapM (\x -> update_character model x) clist) (environment model)
      let m_tick = if (current_tick model == tick_perGen model) then 0 else (current_tick model) + 1
      let m_gen = if (current_tick model == tick_perGen model) then (gen model+1) else  gen model
      return $ model {
+          environment = new_env,
           character_list = new_clist, 
           current_tick = m_tick,
           gen = m_gen

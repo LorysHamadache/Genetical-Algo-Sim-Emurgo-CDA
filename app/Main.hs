@@ -32,8 +32,8 @@ nbSimPerSec = 60
 main :: IO ()
 main = do
   let env_size = 1000
-  let nb_character = 20
-  let nb_food = 20
+  let nb_character = 1
+  let nb_food = 50
   let f1 = basic_food 
   
   c_list <- mapM init_character (replicate nb_character env_size)
