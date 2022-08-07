@@ -17,4 +17,4 @@ I am simulating the behavior of "Characters" in an environment with food. These 
 
 I am using the Gloss Library for vizualization and classical genetical algorithm for the process
 
-![Process](/project_diagram.png)
+![Process](project_diagram.png)
