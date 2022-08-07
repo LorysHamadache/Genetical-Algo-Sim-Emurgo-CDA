@@ -26,6 +26,11 @@ get_color T1 = color_red
 get_color T2 = color_blue
 get_color T3 = color_green
 
+
+-- | Round a specific number of digit
+float_round:: Float -> Int -> Float
+float_round f n = (fromInteger $ round $ f * (10^n)) / (10.0^^n)
+
 -- * Render Model
 -- | Rendering the model by fetching the Picture of each element (Environment & [Character]) by calling their respective render function
 render_model:: Model -> IO Picture
@@ -33,7 +38,7 @@ render_model model=
     return $ pictures $ (
         [render_env (environment model)]++
         (map render_character (character_list model))++
-        [render_UI model]
+        [render_UI model] ++ [render_stats model]
         )
 -- | Render the UI with the Picture rendered from the Tick number and the Generation Number
 render_UI :: Model -> Picture
@@ -54,6 +59,21 @@ render_gen m = translate (100) (0)
     $ color white
     $ text ("Generation : " ++ show (gen m))
 
+render_stats::Model -> Picture
+render_stats m = translate (-500) ( - (get_size $ environment m)/2 - 50)
+    $ scale 0.2 0.2
+    $ color white
+    $ text (t)
+    where
+        t = "Population: " ++ show (length $ character_list m) ++ 
+            " Speed Average = " ++ show(rounded_avgspeed) ++
+            " Max Speed" ++ show (rounded_maxspeed)
+        speed_list =  map (\x -> speed x) (character_list m)
+        avg_speed = (foldr (+) 0 speed_list) / (fromIntegral $ length speed_list)
+        rounded_avgspeed = float_round avg_speed 2
+        rounded_maxspeed = float_round (maximum speed_list) 2
+
+
 -- * Render Character
 -- | Rendering the Character by fetching the picture of its different component (Circle, Name)
 render_character :: Character -> Picture
@@ -71,8 +91,8 @@ render_characterLabel::Character -> Picture
 render_characterLabel c = 
     translate (fst $ position c) (snd $ position c)
     $ color white 
-    $ scale 0.2 0.3
-    $ text ("Pos:" ++ (show $ position c) ++ " Dir: " ++ (show  $ direction c))
+    $ scale 0.2 0.2
+    $ text (name c)
 
 
 -- * Render Environment

@@ -12,6 +12,7 @@ module Characters where
 import Types
 import System.Random
 import Environment
+import Data.List
 import qualified Control.Monad.State.Lazy as SM
 
 
@@ -64,7 +65,7 @@ update_state::Character -> Character
 update_state c 
     | energy c <= 0 = c {state = Dead, energy = 0}
     | otherwise = c
-
+    
 -- | A Helper function to update the energy of a Character by a given float and make sure its stays in the bound [0,100]
 update_energy::Character -> Float -> Character
 update_energy c f
@@ -94,14 +95,13 @@ move_characterRandomly model c = do
     let move_isvalid = is_MoveInbound model next_position
 
     new_c <- if (move_isvalid && (next_direction /= (0,0)))
-        then return $ c {position = next_position, direction = next_direction, energy = energy c - (speed c)/100}
+        then return $ c {position = next_position, direction = next_direction}
         else move_characterRandomly model (c {direction = (- (fst $ next_position), - (snd $ next_position))})
-            -- return $ c {direction = (- (fst $ next_position), - (snd $ next_position)), energy = energy c - (speed c)/100}
     return new_c
 
 -- | Move the Character based on the direction input
 move_inDirection:: MovementVector -> Character -> Character
-move_inDirection mv c= c {position = next_position, direction = mv, energy = energy c - (speed c)/100}
+move_inDirection mv c= c {position = next_position, direction = mv}
     where
         next_position =  get_position c mv
 
@@ -110,37 +110,115 @@ move_character:: Model -> Character -> IO Character
 move_character model c = do
     let food_list = objects $ environment model 
     let in_visionfood = filter (\f -> get_distance (fposition f) (position c) <= (visionfield c)) food_list
+    let new_c = update_energy c (negate (speed c/50))
     if (length in_visionfood == 0)
-        then move_characterRandomly model c
+        then move_characterRandomly model new_c
         else do
-            let (cx,cy) = position c
-            let food_objective = get_directionFood in_visionfood c
-            return $ move_inDirection food_objective c
+            let (cx,cy) = position new_c
+            let food_objective = get_directionFood in_visionfood new_c
+            return $ move_inDirection food_objective new_c
             
--- * Life Functions
+-- * Behavior Functions
 
+-- | Function updating the energy of a character based on the list of food he is eating
 eat_food:: [Food] -> Character -> Character
 eat_food flist c =  update_energy c e
     where e = (foldr (\f -> (+) (fenergy f)) 0 flist)
 
 
 -- * Character Update
--- | Update the Character. This is run once every tick of the simulation
-update_character::Model -> Character -> SM.StateT Environment IO Character
-update_character model c =  do
-    moved <- SM.liftIO $ move_character model c                                                     -- ^ Moving the Character
-    env1 <- SM.get                                                                                  -- ^ Catching the environment State
+
+-- | Update the Character during a normal tick of the simulation (not Tick 0 of each generation).
+update_characterAtTick::Model -> Character -> SM.StateT Environment IO Character
+update_characterAtTick model c =  do
+    moved <- SM.liftIO $ move_character model c                                                 
+    env1 <- SM.get                                                                                
     let f_list1 = objects env1                                                                      
     let remaining_food = filter (\x -> get_distance (fposition x) (position moved) > 10 ) f_list1
     let eaten_food = filter (\x -> get_distance (fposition x) (position moved) <= 10 ) f_list1
-    --SM.liftIO $ print (show $ length remaining_food)
-
     let moved_fed = eat_food eaten_food moved
-
     SM.put (env1 {objects = remaining_food})
     return $ (update_state moved_fed)
+
+-- | Create a new generation based on the precedent, thanks to Genetic Algorithms
+
+
+-- | Initiate a Character Totally Randomely
+initR_character:: Float -> IO Character
+initR_character x = do
+
+     let bound =  (x/2)-1
+
+     c_speed <- randomRIO (1.0,2.0)
+     c_n <- randomRIO (1::Int,999999::Int)
+     c_side <- randomRIO (1,4)
+     c_value <- randomRIO (-bound,bound)
+     c_mx <- randomRIO (0::Float, 1.0)
+     c_my <- randomRIO (0::Float, 1.0)
+
+     let c_name = "Default" ++ show(c_n)
+     let c_pos = tool_randomtoPos bound c_side c_value
+     let c_dir = (c_mx,c_my)
+     return $ basic_character {name = c_name, speed = c_speed, position = c_pos, direction = c_dir}
+
+init_characterGen::Model -> [Character] -> IO [Character]
+init_characterGen model clist =  do
     
-        
+    let env_size = get_size $ environment model
+
+    -- Selection
+    let alive_clist = filter (\x -> state x == Alive) clist
+
+    -- Parenting
+    parents_clist <- SM.filterM (\x -> is_selectedGA x) alive_clist
+    let pairs_clist = get_pairs parents_clist
+    childs <- mapM (\(x,y) -> get_randomMutation env_size x y) pairs_clist
+    
+    -- Complete the list to reach the right number 
+    let nb_pop = length clist
+    let nb_child = length childs
+    let completion_list = take (nb_pop - nb_child) (sortBy sort_character_energy (map (\x -> update_energy x 100) alive_clist))
+    
+    return (childs ++ completion_list)
+
+    
+-- |  A small helper function helping to generate a position on the env box based on the boundaries, the side and a value
+tool_randomtoPos:: Float -> Int -> Float -> Position
+tool_randomtoPos bound side value
+     | side == 1 = (-bound,value)
+     | side == 2 = (value,bound)
+     | side == 3 = (bound,value)
+     | side == 4 = (value,-bound)
+
+is_selectedGA::Character -> IO Bool
+is_selectedGA c = do
+    p <- randomRIO(0::Float,100.0)
+    return $ energy c >= p
+
+
+get_pairs:: [a] -> [(a,a)]
+get_pairs (x:y:ys) = [(x,y)] ++ get_pairs(ys)
+get_pairs (x:[]) = [(x,x)]
+get_pairs [] = [] 
+
+get_randomMutation:: Float -> Character -> Character -> IO Character
+get_randomMutation env_size parent1 parent2 = do
+    basic_child <- initR_character env_size
+    speed_selector <- randomRIO(1::Int,3::Int) -- 1 = Mere, 2 Pere, 3 Aléatoire entre les 2
+    mutation_luck <- randomRIO (0::Float,1.0)
+    mutation <- randomRIO (0.8,1.2)
+    let from_parents = case speed_selector of
+                            1 -> speed parent1
+                            2 -> speed parent2
+                            3 -> ((speed parent1) + (speed parent2)) /2 
+
+    let after_mutation = if (mutation_luck > 0.85) then from_parents * mutation else from_parents
+
+    return basic_child {generation = (generation parent1) + 1, speed = after_mutation}
+
+
+
+
 
 
 

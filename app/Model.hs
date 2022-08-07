@@ -21,53 +21,33 @@ import qualified Control.Monad.State.Lazy as SM
 -- | Update the Model. This is run once every tick of the simulation
 update_model:: ViewPort -> Float -> Model -> IO Model
 update_model _ _ model = do
-     let clist = character_list model -- [Character]
-     (new_clist,new_env) <- SM.runStateT (mapM (\x -> update_character model x) clist) (environment model)
-     let m_tick = if (current_tick model == tick_perGen model) then 0 else (current_tick model) + 1
-     let m_gen = if (current_tick model == tick_perGen model) then (gen model+1) else  gen model
-     return $ model {
-          environment = new_env,
-          character_list = new_clist, 
-          current_tick = m_tick,
-          gen = m_gen
-          }  
-
-
-
-
--- | Initiate a Character Totally Randomely
-init_character:: Float -> IO Character
-init_character x = do
-
-     let bound =  (x/2 )-1
-
-     c_speed <- randomRIO (1.0,2.0)
-     c_n <- randomRIO (1::Int,999999::Int)
-     c_side <- randomRIO (1,4)
-     c_value <- randomRIO (-bound,bound)
-     c_mx <- randomRIO (0::Float, 1.0)
-     c_my <- randomRIO (0::Float, 1.0)
-
-     let c_name = "Default" ++ show(c_n)
-
+     let clist = character_list model
+     let next_tick = if (current_tick model == tick_perGen model) then 0 else (current_tick model) + 1
+     let next_gen = if (current_tick model == tick_perGen model) then (gen model+1) else  gen model
      
-     let c_pos = tool_randomtoPos bound c_side c_value
-     let c_dir = (c_mx,c_my)
-     return $ basic_character {name = c_name, speed = c_speed, position = c_pos, direction = c_dir}
 
-init_food:: Float -> IO Food
-init_food env_size = do
-     x <- randomRIO ((10-env_size)/2, (env_size-10)/2)
-     y <- randomRIO ((10-env_size)/2, (env_size-10)/2)
-     return $ basic_food {fposition = (x,y)}
+     (newtick_clist,newtick_env) <- SM.runStateT (mapM (\x -> update_characterAtTick model x) clist) (environment model)
+     newgen_clist <- init_characterGen model clist
+     newgen_env <-  init_envGen model
+     
+     if (current_tick model /= 0)
+          then return $ model {
+                    environment = newtick_env,
+                    character_list = newtick_clist, 
+                    current_tick = next_tick,
+                    gen = next_gen
+                    }  
+          else 
+               return $ model {
+                    environment = newgen_env,
+                    character_list = newgen_clist, 
+                    current_tick = next_tick,
+                    gen = next_gen
+                    }  
 
--- |  A small helper function helping to generate a position on the env box based on the boundaries, the side and a value
-tool_randomtoPos:: Float -> Int -> Float -> Position
-tool_randomtoPos bound side value
-     | side == 1 = (-bound,value)
-     | side == 2 = (value,bound)
-     | side == 3 = (bound,value)
-     | side == 4 = (value,-bound)
+
+
+
 
 
 
