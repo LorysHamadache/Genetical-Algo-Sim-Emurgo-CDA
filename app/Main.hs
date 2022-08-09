@@ -27,7 +27,6 @@ import Characters
 
 
 background = color_dark
-nbSimPerSec = 1000
 (window_w, window_h) = (1200,1200)
 
 -- | The Main function is the opening function of our program
@@ -62,7 +61,7 @@ main = do
       simulateIO window background fps model1 render_model update_model
 
 
-
+-- | This function parses the arguments of the executabkes
 argsParser :: [String] -> String -> (Bool,Int)
 argsParser list arg
   | length filtered == 0 = (False,0)
@@ -72,6 +71,7 @@ argsParser list arg
     pair_list = get_pairs (map removepunc list)
     filtered = filter (\x -> fst x == arg) pair_list
 
+-- | This function print the Help in the terminal
 printHelp:: IO ()
 printHelp = do
       putStrLn ("LORYS'S PROJECT HELP")

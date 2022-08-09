@@ -7,7 +7,6 @@ Description : Module Containing all the main functions applied to the Character 
 module Characters where
 
 
-
 -- Imports
 import Types
 import System.Random
@@ -36,7 +35,7 @@ get_position c mv = (x + mx*spd, y + my*spd)
         (mx,my) = mv
         spd = speed c
     
- -- | Normalize a vector Movement       
+ -- | Normalize a vector Movement (eg. (5,4) -> (1, 4/5))     
 get_normalizedmovement::MovementVector  -> MovementVector
 get_normalizedmovement (x,y)
     | (x,y) == (0,0) = (0,0)
@@ -105,7 +104,7 @@ move_inDirection mv c= c {position = next_position, direction = mv}
     where
         next_position =  get_position c mv
 
-
+-- | Function called from the update character, executing a movement based on the environment & luck
 move_character:: Model -> Character -> IO Character
 move_character model c = do
     let food_list = objects $ environment model 
@@ -118,7 +117,7 @@ move_character model c = do
             let food_objective = get_directionFood in_visionfood new_c
             return $ move_inDirection food_objective new_c
             
--- * Behavior Functions
+-- * Behavioral Functions
 
 -- | Function updating the energy of a character based on the list of food he is eating
 eat_food:: [Food] -> Character -> Character
@@ -140,8 +139,6 @@ update_characterAtTick model c =  do
     SM.put (env1 {objects = remaining_food})
     return $ (update_state moved_fed)
 
--- | Create a new generation based on the precedent, thanks to Genetic Algorithms
-
 
 -- | Initiate a Character Totally Randomely
 initR_character:: Float -> IO Character
@@ -161,26 +158,37 @@ initR_character x = do
      let c_dir = (c_mx,c_my)
      return $ basic_character {name = c_name, speed = c_speed, position = c_pos, direction = c_dir}
 
+-- | Create a new generation based on the precedent, thanks to Genetic Algorithms
 init_characterGen::Model -> [Character] -> IO [Character]
 init_characterGen model clist =  do
-    
     let env_size = get_size $ environment model
-
     -- Selection
     let alive_clist = filter (\x -> state x == Alive) clist
-
     -- Parenting
     parents_clist <- SM.filterM (\x -> is_selectedGA x) alive_clist
     let pairs_clist = get_pairs parents_clist
-    childs <- mapM (\(x,y) -> get_randomMutation env_size x y) pairs_clist
-    
+    childs <- mapM (\(x,y) -> get_randomMutation env_size x y) (pairs_clist++pairs_clist)
     -- Complete the list to reach the right number 
     let nb_pop = length clist
     let nb_child = length childs
     let completion_list = take (nb_pop - nb_child) (sortBy sort_character_energy (map (\x -> update_energy x 100) alive_clist))
-    
     return (childs ++ completion_list)
 
+-- | Create a new Character based on his parents and random mutation
+get_randomMutation:: Float -> Character -> Character -> IO Character
+get_randomMutation env_size parent1 parent2 = do
+    basic_child <- initR_character env_size
+    speed_selector <- randomRIO(1::Int,3::Int) -- 1 = Mother, 2 Father, 3 In Between
+    mutation_luck <- randomRIO (0::Float,1.0)
+    mutation <- randomRIO (0.85,1.15)
+    let from_parents = case speed_selector of
+                            1 -> speed parent1
+                            2 -> speed parent2
+                            3 -> ((speed parent1) + (speed parent2)) /2 
+    let after_mutation = if (mutation_luck > 0.85) then from_parents * mutation else from_parents
+    return basic_child {generation = (generation parent1) + 1, speed = after_mutation}
+
+-- * Helper Functions
     
 -- |  A small helper function helping to generate a position on the env box based on the boundaries, the side and a value
 tool_randomtoPos:: Float -> Int -> Float -> Position
@@ -190,31 +198,18 @@ tool_randomtoPos bound side value
      | side == 3 = (bound,value)
      | side == 4 = (value,-bound)
 
+-- | Return if a Character is selected for Reproduction
 is_selectedGA::Character -> IO Bool
 is_selectedGA c = do
     p <- randomRIO(0::Float,100.0)
     return $ energy c >= p
 
-
+-- | Makes a pair out of a list. If there is an odd number of elements, the last pair is made from a tuple of the same element
 get_pairs:: [a] -> [(a,a)]
 get_pairs (x:y:ys) = [(x,y)] ++ get_pairs(ys)
 get_pairs (x:[]) = [(x,x)]
 get_pairs [] = [] 
 
-get_randomMutation:: Float -> Character -> Character -> IO Character
-get_randomMutation env_size parent1 parent2 = do
-    basic_child <- initR_character env_size
-    speed_selector <- randomRIO(1::Int,3::Int) -- 1 = Mere, 2 Pere, 3 Aléatoire entre les 2
-    mutation_luck <- randomRIO (0::Float,1.0)
-    mutation <- randomRIO (0.8,1.2)
-    let from_parents = case speed_selector of
-                            1 -> speed parent1
-                            2 -> speed parent2
-                            3 -> ((speed parent1) + (speed parent2)) /2 
-
-    let after_mutation = if (mutation_luck > 0.85) then from_parents * mutation else from_parents
-
-    return basic_child {generation = (generation parent1) + 1, speed = after_mutation}
 
 
 

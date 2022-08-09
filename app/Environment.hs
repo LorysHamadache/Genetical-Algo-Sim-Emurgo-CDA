@@ -17,7 +17,7 @@ import System.Random
 get_size:: Environment -> Size
 get_size (Environment s _) = s
 
-
+-- | Generate a new environement at each generation
 init_envGen:: Model -> IO Environment
 init_envGen model =  do
     let s = get_size $ environment model
@@ -25,6 +25,7 @@ init_envGen model =  do
     let env1 = Environment s food_list
     return env1
 
+-- | Init a food element
 initR_food:: Float -> IO Food
 initR_food env_size = do
      x <- randomRIO ((10-env_size)/2, (env_size-10)/2)
