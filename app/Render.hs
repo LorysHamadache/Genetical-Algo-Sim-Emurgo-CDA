@@ -77,7 +77,7 @@ render_stats m = translate (-500) ( - (get_size $ environment m)/2 - 50)
 -- * Render Character
 -- | Rendering the Character by fetching the picture of its different component (Circle, Name)
 render_character :: Character -> Picture
-render_character c = if (state c == Dead) then Blank else pictures [render_characterCircle c,render_characterLabel c]
+render_character c = if (state c == Dead) then Blank else pictures [render_characterCircle c] --,render_characterLabel c]
 
 -- | Render the Character Circle based on its position & Color
 render_characterCircle :: Character -> Picture
