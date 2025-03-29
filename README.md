@@ -1,4 +1,4 @@
-# Lorys-Project
+# Project from Lorys H
 
 For the @Emurgo Developer Associate Program
 This project aims to demonstrate a sufficient proficiency in Haskell to be able to learn and work with Plutus & Cardano Smart Contracts.
