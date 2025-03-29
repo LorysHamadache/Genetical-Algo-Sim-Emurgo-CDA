@@ -1,65 +1,87 @@
-# Genetic Algorithm Simulation in Haskell  
-*Project by Lorys H — for the @Emurgo Developer Associate Program*
+# Haskell Genetic Algorithm Simulation
 
-This project showcases proficiency in **Haskell**, with the goal of preparing for development on **Plutus** and **Cardano Smart Contracts**.
+**Author**: Lorys Hamadache  
+**Program**: Emurgo Developer Associate Program
 
----
-
-## 🧬 Project Overview
-
-This is a simulation of a **genetic algorithm** implemented in Haskell. While it does not aim to solve a specific real-world problem, it demonstrates how such an algorithmic structure can be designed and visualized using functional programming.
-
-- **Haddock Documentation**:  
-  📚 [View API Docs](https://loryshamadache.github.io/Haskell-Project/)  
-  Contains all modules, types, and function descriptions.
+This project demonstrates proficiency in Haskell by implementing a **genetic algorithm simulation**, serving as a foundation for learning and working with **Plutus** and **Cardano Smart Contracts**.
 
 ---
 
-## 🧠 Simulation Concept
+## Project Overview
 
-The environment simulates autonomous **characters** evolving over time:
-
-- Characters move randomly in a 2D space.
-- Each character has properties: speed, field of vision, size, etc.
-- Characters consume **food** to gain energy, which is depleted over time.
-- Traits like **speed** evolve via genetic inheritance to increase survival chances in future generations.
+This simulation models the behavior of "Characters" within a bounded environment containing food sources. Each character possesses attributes such as speed, field of vision, and size. They move randomly but will change direction upon detecting food within their field of vision to consume it. Consuming food increases their energy, which otherwise depletes over time. Through successive generations, characters evolve traits that enhance their survival, showcasing the principles of genetic algorithms.
 
 ---
 
-## ⚙️ Technical Details
+## Repository Structure
 
-- **Language**: Haskell  
-- **Visualization**: [Gloss](https://hackage.haskell.org/package/gloss) library  
-- **Algorithm**: Basic genetic algorithm loop (selection, crossover, mutation)
+- `app/`: Contains the main source code for the simulation.
+- `docs/`: Directory for documentation files.
+- `dist-newstyle/`: Directory for build artifacts.
+- `.gitattributes`: Git attributes configuration file.
+- `CHANGELOG.md`: Log of changes and updates made to the project.
+- `README.md`: This documentation file.
+- `project-lorys.cabal`: Cabal configuration file for the project.
+- `project_diagram.png`: Visual representation of the project structure or simulation process.
 
 ---
 
-## 🧭 Simulation Flow
+## Visualization
+
+The simulation utilizes the **Gloss** library for rendering graphics, providing a visual representation of the characters' behaviors and interactions within the environment.
 
 ![Simulation Process](project_diagram.png)
 
 ---
 
-## 📁 Structure
+## Documentation
 
-- `Main.hs` — entry point and simulation loop  
-- `World.hs` — environment definition  
-- `Character.hs` — traits, behavior, and energy model  
-- `Genetic.hs` — reproduction and mutation logic  
-- `UI.hs` — Gloss integration for display  
+Comprehensive documentation is available, detailing all classes, functions, and their descriptions. Access the Haddock-generated documentation here:
+
+[Haddock Documentation](https://loryshamadache.github.io/Haskell-Project/)
 
 ---
 
-## 🧪 Run It
+## Getting Started
 
-```bash
-cabal build
-cabal run
-```
+### Prerequisites
 
-## 🔗 Links
+- **Haskell Platform**: Ensure you have the Haskell Platform installed on your system.
+- **Gloss Library**: The simulation relies on the Gloss library for visualization.
 
-- [Cardano Developer Portal](https://developers.cardano.org/)  
-- [Gloss Documentation](https://hackage.haskell.org/package/gloss)  
-- [Haddock Documentation](https://loryshamadache.github.io/Haskell-Project/)  
+### Installation
 
+1. **Clone the Repository**:
+
+   ```bash
+   git clone https://github.com/LorysHamadache/haskell-genetic-sim.git
+   cd haskell-genetic-sim
+   ```
+
+2. **Build the Project**:
+
+   ```bash
+   cabal build
+   ```
+
+3. **Run the Simulation**:
+
+   ```bash
+   cabal run
+   ```
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+---
+
+## Contact
+
+For questions or suggestions, please open an issue in the repository.
+
+---
+
+*Note: This project is provided "as-is" without warranty of any kind. Use at your own discretion.*
