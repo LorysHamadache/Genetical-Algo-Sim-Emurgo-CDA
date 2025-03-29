@@ -1,20 +1,65 @@
-# Project from Lorys H
+# Genetic Algorithm Simulation in Haskell  
+*Project by Lorys H — for the @Emurgo Developer Associate Program*
 
-For the @Emurgo Developer Associate Program
-This project aims to demonstrate a sufficient proficiency in Haskell to be able to learn and work with Plutus & Cardano Smart Contracts.
+This project showcases proficiency in **Haskell**, with the goal of preparing for development on **Plutus** and **Cardano Smart Contracts**.
 
-## Introduction
+---
 
-This project is an attempt of having a genetical algorithm simulation in Haskell. It do not solve any real problem but demonstrate how to approach such project in Haskell.
-The Haddock documentation is available here: [Haddock Description of Lorys's Project](https://loryshamadache.github.io/Haskell-Project/)
-In this documentation you will be able to find all the classes & function and their description
+## 🧬 Project Overview
 
-## Simulation
+This is a simulation of a **genetic algorithm** implemented in Haskell. While it does not aim to solve a specific real-world problem, it demonstrates how such an algorithmic structure can be designed and visualized using functional programming.
 
-I am simulating the behavior of "Characters" in an environment with food. These Characters wander randomely in the bounded environment. These Characters have a speed, a field of vision, a size ... etc. When they encounter food, they change direction to get it. Food gives them energy that they lose through time. In this environment, next generation of characters adjust their speed for better survival.
+- **Haddock Documentation**:  
+  📚 [View API Docs](https://loryshamadache.github.io/Haskell-Project/)  
+  Contains all modules, types, and function descriptions.
 
-## General Process
+---
 
-I am using the Gloss Library for vizualization and classical genetical algorithm for the process
+## 🧠 Simulation Concept
 
-![Process](project_diagram.png)
+The environment simulates autonomous **characters** evolving over time:
+
+- Characters move randomly in a 2D space.
+- Each character has properties: speed, field of vision, size, etc.
+- Characters consume **food** to gain energy, which is depleted over time.
+- Traits like **speed** evolve via genetic inheritance to increase survival chances in future generations.
+
+---
+
+## ⚙️ Technical Details
+
+- **Language**: Haskell  
+- **Visualization**: [Gloss](https://hackage.haskell.org/package/gloss) library  
+- **Algorithm**: Basic genetic algorithm loop (selection, crossover, mutation)
+
+---
+
+## 🧭 Simulation Flow
+
+![Simulation Process](project_diagram.png)
+
+---
+
+## 📁 Structure
+
+- `Main.hs` — entry point and simulation loop  
+- `World.hs` — environment definition  
+- `Character.hs` — traits, behavior, and energy model  
+- `Genetic.hs` — reproduction and mutation logic  
+- `UI.hs` — Gloss integration for display  
+
+---
+
+## 🧪 Run It
+
+```bash
+cabal build
+cabal run
+```
+
+## 🔗 Links
+
+- [Cardano Developer Portal](https://developers.cardano.org/)  
+- [Gloss Documentation](https://hackage.haskell.org/package/gloss)  
+- [Haddock Documentation](https://loryshamadache.github.io/Haskell-Project/)  
+
